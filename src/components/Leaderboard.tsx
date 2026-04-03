@@ -13,14 +13,14 @@ interface ClimbEntry {
 }
 
 const mockData: ClimbEntry[] = [
-  { rank: 1, name: "Nikos P.", department: "IT", bestTime: "1:42", totalClimbs: 47, streak: 12, source: "garmin", avatarInitials: "NP", trend: "same" },
-  { rank: 2, name: "Maria K.", department: "Marketing", bestTime: "1:48", totalClimbs: 38, streak: 8, source: "strava", avatarInitials: "MK", trend: "up" },
-  { rank: 3, name: "Giorgos T.", department: "Finance", bestTime: "1:55", totalClimbs: 52, streak: 15, source: "apple", avatarInitials: "GT", trend: "up" },
-  { rank: 4, name: "Elena D.", department: "HR", bestTime: "2:03", totalClimbs: 29, streak: 5, source: "garmin", avatarInitials: "ED", trend: "down" },
-  { rank: 5, name: "Dimitris V.", department: "Engineering", bestTime: "2:08", totalClimbs: 34, streak: 3, source: "strava", avatarInitials: "DV", trend: "up" },
-  { rank: 6, name: "Sofia A.", department: "Legal", bestTime: "2:15", totalClimbs: 21, streak: 7, source: "apple", avatarInitials: "SA", trend: "same" },
-  { rank: 7, name: "Kostas M.", department: "Sales", bestTime: "2:22", totalClimbs: 18, streak: 2, source: "garmin", avatarInitials: "KM", trend: "down" },
-  { rank: 8, name: "Anna R.", department: "IT", bestTime: "2:30", totalClimbs: 15, streak: 4, source: "strava", avatarInitials: "AR", trend: "up" },
+  { rank: 1, name: "Nikos P.", department: "0100101101", bestTime: "1:42", totalClimbs: 47, streak: 12, source: "garmin", avatarInitials: "NP", trend: "same" },
+  { rank: 2, name: "Maria K.", department: "Digital Alchemists", bestTime: "1:48", totalClimbs: 38, streak: 8, source: "strava", avatarInitials: "MK", trend: "up" },
+  { rank: 3, name: "Giorgos T.", department: "Senior Troublemakers", bestTime: "1:55", totalClimbs: 52, streak: 15, source: "apple", avatarInitials: "GT", trend: "up" },
+  { rank: 4, name: "Elena D.", department: "Orchestrators", bestTime: "2:03", totalClimbs: 29, streak: 5, source: "garmin", avatarInitials: "ED", trend: "down" },
+  { rank: 5, name: "Dimitris V.", department: "Senior Troublemakers", bestTime: "2:08", totalClimbs: 34, streak: 3, source: "strava", avatarInitials: "DV", trend: "up" },
+  { rank: 6, name: "Sofia A.", department: "Digital Alchemists", bestTime: "2:15", totalClimbs: 21, streak: 7, source: "apple", avatarInitials: "SA", trend: "same" },
+  { rank: 7, name: "Kostas M.", department: "0100101101", bestTime: "2:22", totalClimbs: 18, streak: 2, source: "garmin", avatarInitials: "KM", trend: "down" },
+  { rank: 8, name: "Anna R.", department: "Orchestrators", bestTime: "2:30", totalClimbs: 15, streak: 4, source: "strava", avatarInitials: "AR", trend: "up" },
 ];
 
 const sourceIcons: Record<string, string> = {
