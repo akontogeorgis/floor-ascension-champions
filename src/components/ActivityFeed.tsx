@@ -10,11 +10,11 @@ interface Activity {
 }
 
 const recentActivities: Activity[] = [
-  { id: 1, name: "Nikos P.", time: "1:42", timeAgo: "2h ago", source: "Garmin", isPersonalBest: true },
-  { id: 2, name: "Maria K.", time: "1:52", timeAgo: "3h ago", source: "Strava", isPersonalBest: false },
-  { id: 3, name: "Giorgos T.", time: "1:55", timeAgo: "5h ago", source: "Apple Watch", isPersonalBest: true },
-  { id: 4, name: "Elena D.", time: "2:10", timeAgo: "Yesterday", source: "Garmin", isPersonalBest: false },
-  { id: 5, name: "Dimitris V.", time: "2:08", timeAgo: "Yesterday", source: "Strava", isPersonalBest: false },
+  { id: 1, name: "Apostolopoulos", time: "1:42", timeAgo: "2h ago", source: "Garmin", isPersonalBest: true },
+  { id: 2, name: "Rizou", time: "1:52", timeAgo: "3h ago", source: "Strava", isPersonalBest: false },
+  { id: 3, name: "Kirpitsas", time: "1:55", timeAgo: "5h ago", source: "Apple Watch", isPersonalBest: true },
+  { id: 4, name: "Mantoudaki", time: "2:10", timeAgo: "Yesterday", source: "Garmin", isPersonalBest: false },
+  { id: 5, name: "Tsaltas", time: "2:08", timeAgo: "Yesterday", source: "Strava", isPersonalBest: false },
 ];
 
 const ActivityFeed = () => {

@@ -13,14 +13,20 @@ interface ClimbEntry {
 }
 
 const mockData: ClimbEntry[] = [
-  { rank: 1, name: "Nikos P.", department: "0100101101", bestTime: "1:42", totalClimbs: 47, streak: 12, source: "garmin", avatarInitials: "NP", trend: "same" },
-  { rank: 2, name: "Maria K.", department: "Digital Alchemists", bestTime: "1:48", totalClimbs: 38, streak: 8, source: "strava", avatarInitials: "MK", trend: "up" },
-  { rank: 3, name: "Giorgos T.", department: "Senior Troublemakers", bestTime: "1:55", totalClimbs: 52, streak: 15, source: "apple", avatarInitials: "GT", trend: "up" },
-  { rank: 4, name: "Elena D.", department: "Orchestrators", bestTime: "2:03", totalClimbs: 29, streak: 5, source: "garmin", avatarInitials: "ED", trend: "down" },
-  { rank: 5, name: "Dimitris V.", department: "Senior Troublemakers", bestTime: "2:08", totalClimbs: 34, streak: 3, source: "strava", avatarInitials: "DV", trend: "up" },
-  { rank: 6, name: "Sofia A.", department: "Digital Alchemists", bestTime: "2:15", totalClimbs: 21, streak: 7, source: "apple", avatarInitials: "SA", trend: "same" },
-  { rank: 7, name: "Kostas M.", department: "0100101101", bestTime: "2:22", totalClimbs: 18, streak: 2, source: "garmin", avatarInitials: "KM", trend: "down" },
-  { rank: 8, name: "Anna R.", department: "Orchestrators", bestTime: "2:30", totalClimbs: 15, streak: 4, source: "strava", avatarInitials: "AR", trend: "up" },
+  { rank: 1, name: "Apostolopoulos", department: "Senior Troublemakers", bestTime: "1:42", totalClimbs: 47, streak: 12, source: "garmin", avatarInitials: "AP", trend: "same" },
+  { rank: 2, name: "Rizou", department: "0100101101", bestTime: "1:48", totalClimbs: 38, streak: 8, source: "strava", avatarInitials: "RI", trend: "up" },
+  { rank: 3, name: "Kirpitsas", department: "Orchestrators", bestTime: "1:55", totalClimbs: 52, streak: 15, source: "apple", avatarInitials: "KI", trend: "up" },
+  { rank: 4, name: "Mantoudaki", department: "0100101101", bestTime: "2:03", totalClimbs: 29, streak: 5, source: "garmin", avatarInitials: "MA", trend: "down" },
+  { rank: 5, name: "Tsaltas", department: "Digital Alchemists", bestTime: "2:08", totalClimbs: 34, streak: 3, source: "strava", avatarInitials: "TS", trend: "up" },
+  { rank: 6, name: "KanellopoulosK", department: "Orchestrators", bestTime: "2:15", totalClimbs: 21, streak: 7, source: "apple", avatarInitials: "KK", trend: "same" },
+  { rank: 7, name: "Simoni", department: "0100101101", bestTime: "2:22", totalClimbs: 18, streak: 2, source: "garmin", avatarInitials: "SI", trend: "down" },
+  { rank: 8, name: "Theodorakos", department: "0100101101", bestTime: "2:30", totalClimbs: 15, streak: 4, source: "strava", avatarInitials: "TH", trend: "up" },
+  { rank: 9, name: "Aggeli", department: "Orchestrators", bestTime: "2:35", totalClimbs: 13, streak: 6, source: "apple", avatarInitials: "AG", trend: "up" },
+  { rank: 10, name: "Mpotsios", department: "Orchestrators", bestTime: "2:41", totalClimbs: 11, streak: 3, source: "garmin", avatarInitials: "MP", trend: "same" },
+  { rank: 11, name: "Koukoulis", department: "0100101101", bestTime: "2:48", totalClimbs: 9, streak: 1, source: "strava", avatarInitials: "KO", trend: "down" },
+  { rank: 12, name: "Tsakas", department: "Senior Troublemakers", bestTime: "2:55", totalClimbs: 8, streak: 2, source: "garmin", avatarInitials: "TS", trend: "up" },
+  { rank: 13, name: "Davilla", department: "Orchestrators", bestTime: "3:02", totalClimbs: 6, streak: 1, source: "apple", avatarInitials: "DA", trend: "same" },
+  { rank: 14, name: "Mparmpopoulou", department: "Digital Alchemists", bestTime: "3:10", totalClimbs: 5, streak: 1, source: "strava", avatarInitials: "MB", trend: "up" },
 ];
 
 const sourceIcons: Record<string, string> = {
