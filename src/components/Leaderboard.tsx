@@ -1,4 +1,8 @@
+import { useEffect, useState } from "react";
 import { Trophy, TrendingUp, Flame } from "lucide-react";
+import { supabase, formatTime } from "@/lib/supabase";
+import ChallengeButton from "./ChallengeButton";
+import InviteUser from "./InviteUser";
 
 interface ClimbEntry {
   rank: number;
@@ -10,6 +14,20 @@ interface ClimbEntry {
   source: "garmin" | "strava" | "apple";
   avatarInitials: string;
   trend: "up" | "down" | "same";
+  email?: string;
+}
+
+interface LeaderboardData {
+  id: string;
+  full_name: string;
+  department: string;
+  avatar_initials?: string;
+  best_time_seconds: number;
+  total_climbs: number;
+  week_climbs: number;
+  rank: number;
+  primary_source?: string;
+  email?: string;
 }
 
 const mockData: ClimbEntry[] = [
@@ -22,7 +40,7 @@ const mockData: ClimbEntry[] = [
   { rank: 7, name: "Simoni", department: "0100101101", bestTime: "2:22", totalClimbs: 18, streak: 2, source: "garmin", avatarInitials: "SI", trend: "down" },
   { rank: 8, name: "Theodorakos", department: "0100101101", bestTime: "2:30", totalClimbs: 15, streak: 4, source: "strava", avatarInitials: "TH", trend: "up" },
   { rank: 9, name: "Aggeli", department: "Orchestrators", bestTime: "2:35", totalClimbs: 13, streak: 6, source: "apple", avatarInitials: "AG", trend: "up" },
-  { rank: 10, name: "Mpotsios", department: "Orchestrators", bestTime: "2:41", totalClimbs: 11, streak: 3, source: "garmin", avatarInitials: "MP", trend: "same" },
+  { rank: 10, name: "Mpotsiaris", department: "Orchestrators", bestTime: "2:41", totalClimbs: 11, streak: 3, source: "garmin", avatarInitials: "MP", trend: "same" },
   { rank: 11, name: "Koukoulis", department: "0100101101", bestTime: "2:48", totalClimbs: 9, streak: 1, source: "strava", avatarInitials: "KO", trend: "down" },
   { rank: 12, name: "Tsakas", department: "Senior Troublemakers", bestTime: "2:55", totalClimbs: 8, streak: 2, source: "garmin", avatarInitials: "TS", trend: "up" },
   { rank: 13, name: "Davilla", department: "Orchestrators", bestTime: "3:02", totalClimbs: 6, streak: 1, source: "apple", avatarInitials: "DA", trend: "same" },
@@ -42,16 +60,142 @@ const sourceLabels: Record<string, string> = {
 };
 
 const Leaderboard = () => {
+  const [data, setData] = useState<ClimbEntry[]>(mockData);
+  const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState<{ name: string; bestTime: string } | null>(null);
+
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      if (!supabase) {
+        // No Supabase configured, use mock data
+        setLoading(false);
+        return;
+      }
+
+      try {
+        // Get current user's athlete ID from localStorage
+        const athleteId = localStorage.getItem('strava_athlete_id');
+        
+        // Fetch leaderboard with email from profiles table
+        const { data: leaderboardData, error } = await supabase
+          .from('leaderboard')
+          .select(`
+            *,
+            email
+          `)
+          .order('rank', { ascending: true });
+
+        if (error) throw error;
+
+        if (leaderboardData && leaderboardData.length > 0) {
+          // Transform Supabase data to match component interface
+          const transformedData: ClimbEntry[] = leaderboardData.map((item: LeaderboardData, index: number) => ({
+            rank: item.rank || index + 1,
+            name: item.full_name,
+            department: item.department || 'Unknown',
+            bestTime: formatTime(item.best_time_seconds),
+            totalClimbs: item.total_climbs || 0,
+            streak: item.week_climbs || 0,
+            source: (item.primary_source as "garmin" | "strava" | "apple") || 'garmin',
+            avatarInitials: item.avatar_initials || item.full_name.substring(0, 2).toUpperCase(),
+            trend: 'same' as const, // Default, will be calculated based on historical data later
+            email: item.email,
+          }));
+
+          setData(transformedData);
+          
+          // Find current user in the leaderboard
+          if (athleteId) {
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('full_name')
+              .eq('strava_athlete_id', parseInt(athleteId))
+              .single();
+            
+            if (profileData) {
+              const userEntry = transformedData.find(entry => entry.name === profileData.full_name);
+              if (userEntry) {
+                setCurrentUser({ name: userEntry.name, bestTime: userEntry.bestTime });
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching leaderboard:', error);
+        // Keep using mock data on error
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLeaderboard();
+
+    // Subscribe to real-time updates
+    if (supabase) {
+      const channel = supabase
+        .channel('activities_changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'activities',
+          },
+          () => {
+            // Refresh leaderboard when activities change
+            fetchLeaderboard();
+          }
+        )
+        .subscribe();
+
+      // Listen for manual sync events
+      const handleManualUpdate = () => {
+        console.log('Manual update triggered, refreshing leaderboard...');
+        fetchLeaderboard();
+      };
+      
+      window.addEventListener('activities-updated', handleManualUpdate);
+
+      return () => {
+        supabase.removeChannel(channel);
+        window.removeEventListener('activities-updated', handleManualUpdate);
+      };
+    }
+  }, []);
+
+  if (loading) {
+    return (
+      <section className="container py-12">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <Trophy className="w-6 h-6 text-primary" />
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground">Leaderboard</h2>
+          </div>
+        </div>
+        <div className="text-center py-12">
+          <div className="animate-pulse">Loading leaderboard...</div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="container py-12">
-      <div className="flex items-center gap-3 mb-8">
-        <Trophy className="w-6 h-6 text-primary" />
-        <h2 className="text-2xl md:text-3xl font-bold text-foreground">Leaderboard</h2>
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-3">
+          <Trophy className="w-6 h-6 text-primary" />
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground">Leaderboard</h2>
+        </div>
+        <InviteUser
+          yourName={currentUser?.name}
+          yourBestTime={currentUser?.bestTime}
+          yourRank={currentUser ? data.find(e => e.name === currentUser.name)?.rank : undefined}
+        />
       </div>
 
       {/* Top 3 podium */}
       <div className="grid grid-cols-3 gap-3 mb-8 max-w-2xl mx-auto">
-        {[mockData[1], mockData[0], mockData[2]].map((entry, i) => {
+        {data.length >= 3 && [data[1], data[0], data[2]].map((entry, i) => {
           const podiumOrder = [2, 1, 3];
           const colors = ["text-silver", "text-gold", "text-bronze"];
           const sizes = ["pt-6", "pt-0", "pt-8"];
@@ -85,10 +229,11 @@ const Leaderboard = () => {
                 <th className="px-4 py-3 text-right hidden md:table-cell">Climbs</th>
                 <th className="px-4 py-3 text-right hidden md:table-cell">Streak</th>
                 <th className="px-4 py-3 text-center hidden sm:table-cell">Source</th>
+                <th className="px-4 py-3 text-center hidden lg:table-cell">Action</th>
               </tr>
             </thead>
             <tbody>
-              {mockData.map((entry) => (
+              {data.map((entry) => (
                 <tr
                   key={entry.rank}
                   className={`border-b border-border/50 transition-colors hover:bg-secondary/50 ${
@@ -128,6 +273,15 @@ const Leaderboard = () => {
                     <span className="text-xs px-2 py-1 rounded-full bg-secondary text-muted-foreground">
                       {sourceIcons[entry.source]} {sourceLabels[entry.source]}
                     </span>
+                  </td>
+                  <td className="px-4 py-3 text-center hidden lg:table-cell">
+                    <ChallengeButton
+                      athleteName={entry.name}
+                      athleteEmail={entry.email}
+                      athleteBestTime={entry.bestTime}
+                      yourName={currentUser?.name}
+                      yourBestTime={currentUser?.bestTime}
+                    />
                   </td>
                 </tr>
               ))}

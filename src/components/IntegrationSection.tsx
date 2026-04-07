@@ -1,28 +1,6 @@
 import { Smartphone, Watch, Activity } from "lucide-react";
-
-const integrations = [
-  {
-    name: "Garmin Connect",
-    description: "Sync stair climbing activities automatically from your Garmin watch",
-    icon: <Watch className="w-8 h-8" />,
-    status: "Coming Soon",
-    color: "text-primary",
-  },
-  {
-    name: "Strava",
-    description: "Import your stair runs from Strava activities",
-    icon: <Activity className="w-8 h-8" />,
-    status: "Coming Soon",
-    color: "text-primary",
-  },
-  {
-    name: "Apple Watch",
-    description: "Track floors climbed with Apple Health integration",
-    icon: <Smartphone className="w-8 h-8" />,
-    status: "Coming Soon",
-    color: "text-primary",
-  },
-];
+import StravaConnect from "./StravaConnect";
+import GarminConnect from "./GarminConnect";
 
 const IntegrationSection = () => {
   return (
@@ -31,21 +9,56 @@ const IntegrationSection = () => {
       <p className="text-muted-foreground mb-8">Connect your device to auto-sync climbs</p>
 
       <div className="grid md:grid-cols-3 gap-4">
-        {integrations.map((integration) => (
-          <div
-            key={integration.name}
-            className="card-gradient rounded-xl border border-border p-6 hover:border-primary/30 transition-all group"
-          >
-            <div className={`${integration.color} mb-4 group-hover:scale-110 transition-transform`}>
-              {integration.icon}
-            </div>
-            <h3 className="font-bold text-foreground text-lg mb-1">{integration.name}</h3>
-            <p className="text-sm text-muted-foreground mb-4">{integration.description}</p>
-            <span className="text-xs font-medium px-3 py-1.5 rounded-full bg-primary/10 text-primary">
-              {integration.status}
-            </span>
+        {/* Garmin Connect */}
+        <div className="card-gradient rounded-xl border border-border p-6 hover:border-primary/30 transition-all group">
+          <div className="text-primary mb-4 group-hover:scale-110 transition-transform">
+            <Watch className="w-8 h-8" />
           </div>
-        ))}
+          <h3 className="font-bold text-foreground text-lg mb-1">Garmin Connect</h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            Sync stair climbing activities from your Garmin watch
+          </p>
+          
+          <span className="text-xs font-medium px-3 py-1.5 rounded-full bg-primary/10 text-primary">
+            Coming Soon
+          </span>
+          {/* <div className="mt-4">
+            <GarminConnect />
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            <a href="/GARMIN_INTEGRATION.md" className="text-primary hover:underline">
+              Setup required - See integration guide
+            </a>
+          </p> */}
+        </div>
+
+        {/* Strava */}
+        <div className="card-gradient rounded-xl border border-border p-6 hover:border-primary/30 transition-all group">
+          <div className="text-primary mb-4 group-hover:scale-110 transition-transform">
+            <Activity className="w-8 h-8" />
+          </div>
+          <h3 className="font-bold text-foreground text-lg mb-1">Strava</h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            Import your stair runs from Strava activities
+          </p>
+          <div className="mt-4">
+            <StravaConnect />
+          </div>
+        </div>
+
+        {/* Apple Watch */}
+        <div className="card-gradient rounded-xl border border-border p-6 hover:border-primary/30 transition-all group">
+          <div className="text-primary mb-4 group-hover:scale-110 transition-transform">
+            <Smartphone className="w-8 h-8" />
+          </div>
+          <h3 className="font-bold text-foreground text-lg mb-1">Apple Watch</h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            Track floors climbed with Apple Health integration
+          </p>
+          <span className="text-xs font-medium px-3 py-1.5 rounded-full bg-primary/10 text-primary">
+            Coming Soon
+          </span>
+        </div>
       </div>
     </section>
   );
