@@ -40,6 +40,22 @@ export default function StravaConnect() {
             }
           });
       }
+
+      // AUTO-SYNC: Check if we should sync automatically
+      const lastSync = localStorage.getItem("last_strava_sync");
+      const lastSyncTime = lastSync ? parseInt(lastSync) : 0;
+      const hoursSinceLastSync = (Date.now() - lastSyncTime) / (1000 * 60 * 60);
+      
+      // Auto-sync if last sync was more than 6 hours ago (or never synced)
+      if (hoursSinceLastSync >= 1 || !lastSync) {
+        console.log(`Auto-syncing activities (last sync: ${hoursSinceLastSync.toFixed(1)} hours ago)`);
+        // Delay slightly to let the UI load first
+        setTimeout(() => {
+          syncActivities(true); // true = silent sync
+        }, 2000);
+      } else {
+        console.log(`No auto-sync needed (last sync: ${hoursSinceLastSync.toFixed(1)} hours ago)`);
+      }
     }
   }, []);
 
@@ -59,7 +75,7 @@ export default function StravaConnect() {
     setDepartment("Uncategorized");
   };
 
-  const syncActivities = async () => {
+  const syncActivities = async (silent = false) => {
     setSyncing(true);
     
     try {
@@ -67,11 +83,16 @@ export default function StravaConnect() {
       const athleteId = localStorage.getItem("strava_athlete_id");
       
       if (!token) {
-        toast.error("Not connected to Strava");
+        if (!silent) toast.error("Not connected to Strava");
+        setSyncing(false);
         return;
       }
 
-      toast.info("Fetching activities from Strava...");
+      if (!silent) {
+        toast.info("Fetching activities from Strava...");
+      } else {
+        console.log("Silently syncing activities in background...");
+      }
 
       // Fetch recent activities from Strava
       const response = await fetch(
@@ -166,19 +187,37 @@ export default function StravaConnect() {
         }
       }
 
+      // Save last sync timestamp
+      localStorage.setItem("last_strava_sync", Date.now().toString());
+
       if (imported > 0) {
-        toast.success(`✅ Synced ${imported} stair climbing activities!${skipped > 0 ? ` (${skipped} already imported)` : ''}`);
+        if (!silent) {
+          toast.success(`✅ Synced ${imported} stair climbing activities!${skipped > 0 ? ` (${skipped} already imported)` : ''}`);
+        } else {
+          console.log(`Auto-sync: Imported ${imported} new activities`);
+          toast.success(`🔄 Auto-synced ${imported} new activities!`, { duration: 3000 });
+        }
         
         // Trigger a refresh by dispatching a custom event
         window.dispatchEvent(new Event('activities-updated'));
       } else if (skipped > 0) {
-        toast.info(`All ${skipped} activities already imported!`);
+        if (!silent) {
+          toast.info(`All ${skipped} activities already imported!`);
+        } else {
+          console.log(`Auto-sync: All ${skipped} activities already imported`);
+        }
       } else {
-        toast.info("No stair climbing activities found (looking for ~25m elevation gain)");
+        if (!silent) {
+          toast.info("No stair climbing activities found (looking for ~25m elevation gain)");
+        } else {
+          console.log("Auto-sync: No new activities found");
+        }
       }
     } catch (error) {
       console.error("Sync error:", error);
-      toast.error("Failed to sync activities. Check console for details.");
+      if (!silent) {
+        toast.error("Failed to sync activities. Check console for details.");
+      }
     } finally {
       setSyncing(false);
     }
