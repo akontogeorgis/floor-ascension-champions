@@ -18,45 +18,62 @@ export default function StravaConnect() {
   const [department, setDepartment] = useState("Uncategorized");
 
   useEffect(() => {
-    // Check if user already connected
-    const token = localStorage.getItem("strava_access_token");
-    const name = localStorage.getItem("strava_athlete_name");
-    const athleteId = localStorage.getItem("strava_athlete_id");
-    
-    if (token) {
-      setConnected(true);
-      setAthleteName(name || "");
+    const checkConnection = () => {
+      // Check if user already connected
+      const token = localStorage.getItem("strava_access_token");
+      const name = localStorage.getItem("strava_athlete_name");
+      const athleteId = localStorage.getItem("strava_athlete_id");
       
-      // Fetch current department from database
-      if (supabase && athleteId) {
-        supabase
-          .from('profiles')
-          .select('department')
-          .eq('strava_athlete_id', parseInt(athleteId))
-          .single()
-          .then(({ data }) => {
-            if (data) {
-              setDepartment(data.department || "Uncategorized");
-            }
-          });
-      }
+      if (token) {
+        setConnected(true);
+        setAthleteName(name || "");
+        
+        // Fetch current department from database
+        if (supabase && athleteId) {
+          supabase
+            .from('profiles')
+            .select('department')
+            .eq('strava_athlete_id', parseInt(athleteId))
+            .single()
+            .then(({ data }) => {
+              if (data) {
+                setDepartment(data.department || "Uncategorized");
+              }
+            });
+        }
 
-      // AUTO-SYNC: Check if we should sync automatically
-      const lastSync = localStorage.getItem("last_strava_sync");
-      const lastSyncTime = lastSync ? parseInt(lastSync) : 0;
-      const hoursSinceLastSync = (Date.now() - lastSyncTime) / (1000 * 60 * 60);
-      
-      // Auto-sync if last sync was more than 1 hours ago (or never synced)
-      if (hoursSinceLastSync >= 1 || !lastSync) {
-        console.log(`Auto-syncing activities (last sync: ${hoursSinceLastSync.toFixed(1)} hours ago)`);
-        // Delay slightly to let the UI load first
-        setTimeout(() => {
-          syncActivities(true); // true = silent sync
-        }, 2000);
-      } else {
-        console.log(`No auto-sync needed (last sync: ${hoursSinceLastSync.toFixed(1)} hours ago)`);
+        // AUTO-SYNC: Check if we should sync automatically
+        const lastSync = localStorage.getItem("last_strava_sync");
+        const lastSyncTime = lastSync ? parseInt(lastSync) : 0;
+        const hoursSinceLastSync = (Date.now() - lastSyncTime) / (1000 * 60 * 60);
+        
+        // Auto-sync if last sync was more than 1 hours ago (or never synced)
+        if (hoursSinceLastSync >= 1 || !lastSync) {
+          console.log(`Auto-syncing activities (last sync: ${hoursSinceLastSync.toFixed(1)} hours ago)`);
+          // Delay slightly to let the UI load first
+          setTimeout(() => {
+            syncActivities(true); // true = silent sync
+          }, 2000);
+        } else {
+          console.log(`No auto-sync needed (last sync: ${hoursSinceLastSync.toFixed(1)} hours ago)`);
+        }
       }
-    }
+    };
+    
+    // Check on mount
+    checkConnection();
+    
+    // Listen for Strava connection event (from callback page)
+    const handleStravaConnected = () => {
+      console.log("Strava connected event received, refreshing state...");
+      checkConnection();
+    };
+    
+    window.addEventListener('strava-connected', handleStravaConnected);
+    
+    return () => {
+      window.removeEventListener('strava-connected', handleStravaConnected);
+    };
   }, []);
 
   const connectStrava = () => {
@@ -284,14 +301,14 @@ export default function StravaConnect() {
             <Button
               variant="default"
               size="sm"
-              onClick={syncActivities}
+              onClick={() => syncActivities()}
               disabled={syncing}
               className="gap-2 flex-1"
             >
               <RefreshCw className={`w-3 h-3 ${syncing ? 'animate-spin' : ''}`} />
               {syncing ? "Syncing..." : "Sync Now"}
             </Button>
-            <Button variant="outline" size="sm" onClick={disconnect}>
+            <Button variant="outline" size="sm" onClick={() => disconnect()}>
               Disconnect
             </Button>
           </div>
