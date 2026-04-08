@@ -56,6 +56,11 @@ export default function StravaConnect() {
           }, 2000);
         } else {
           console.log(`No auto-sync needed (last sync: ${hoursSinceLastSync.toFixed(1)} hours ago)`);
+          // Still disconnect even if no sync needed (to free athlete slot)
+          setTimeout(() => {
+            console.log("Auto-disconnecting (already synced recently)...");
+            disconnect(true); // true = silent
+          }, 3000); // 3 seconds
         }
       }
     };
