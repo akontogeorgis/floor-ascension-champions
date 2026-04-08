@@ -46,7 +46,7 @@ export default function StravaConnect() {
       const lastSyncTime = lastSync ? parseInt(lastSync) : 0;
       const hoursSinceLastSync = (Date.now() - lastSyncTime) / (1000 * 60 * 60);
       
-      // Auto-sync if last sync was more than 6 hours ago (or never synced)
+      // Auto-sync if last sync was more than 1 hours ago (or never synced)
       if (hoursSinceLastSync >= 1 || !lastSync) {
         console.log(`Auto-syncing activities (last sync: ${hoursSinceLastSync.toFixed(1)} hours ago)`);
         // Delay slightly to let the UI load first
@@ -65,7 +65,17 @@ export default function StravaConnect() {
     window.location.href = authUrl;
   };
 
-  const disconnect = () => {
+  const disconnect = (silent = false) => {
+    const token = localStorage.getItem("strava_access_token");
+    
+    // Revoke token on Strava side to actually free up the athlete slot
+    if (token) {
+      fetch("https://www.strava.com/oauth/deauthorize", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` }
+      }).catch(err => console.log("Deauthorize error (non-critical):", err));
+    }
+    
     localStorage.removeItem("strava_access_token");
     localStorage.removeItem("strava_refresh_token");
     localStorage.removeItem("strava_athlete_name");
@@ -73,6 +83,10 @@ export default function StravaConnect() {
     setConnected(false);
     setAthleteName("");
     setDepartment("Uncategorized");
+    
+    if (!silent) {
+      toast.success("Disconnected from Strava");
+    }
   };
 
   const syncActivities = async (silent = false) => {
@@ -200,18 +214,37 @@ export default function StravaConnect() {
         
         // Trigger a refresh by dispatching a custom event
         window.dispatchEvent(new Event('activities-updated'));
+        
+        // Auto-disconnect after successful sync to free up athlete slot for others
+        // Silent disconnect - no toast notification
+        setTimeout(() => {
+          console.log("Auto-disconnecting to free athlete slot for others...");
+          disconnect(true); // true = silent disconnect
+        }, 2000); // 2 second delay to ensure sync completes
       } else if (skipped > 0) {
         if (!silent) {
           toast.info(`All ${skipped} activities already imported!`);
         } else {
           console.log(`Auto-sync: All ${skipped} activities already imported`);
         }
+        
+        // Disconnect even if no new activities (already synced before)
+        setTimeout(() => {
+          console.log("Auto-disconnecting (no new activities)...");
+          disconnect(true);
+        }, 2000);
       } else {
         if (!silent) {
           toast.info("No stair climbing activities found (looking for ~25m elevation gain)");
         } else {
           console.log("Auto-sync: No new activities found");
         }
+        
+        // Disconnect even if no activities found
+        setTimeout(() => {
+          console.log("Auto-disconnecting (no activities found)...");
+          disconnect(true);
+        }, 2000);
       }
     } catch (error) {
       console.error("Sync error:", error);
