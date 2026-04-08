@@ -97,6 +97,10 @@ export default function StravaCallback() {
           }
 
           setStatus("Connected successfully!");
+          
+          // Trigger a custom event to refresh StravaConnect component
+          window.dispatchEvent(new Event('strava-connected'));
+          
           setTimeout(() => navigate("/"), 1500);
         } else {
           setStatus("Failed to get access token");
