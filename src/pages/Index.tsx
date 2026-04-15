@@ -14,8 +14,8 @@ const Index = () => {
       {/* <div className="container py-8">
         <UserStats />
       </div> */}
-      {/* <Leaderboard />
-      <ActivityFeed /> */}
+      <Leaderboard />
+      <ActivityFeed />
       <IntegrationSection />
     </div>
   );
