@@ -7,6 +7,7 @@ import IntegrationSection from "@/components/IntegrationSection";
 // import UserStats from "@/components/UserStats";
 
 const Index = () => {
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -14,8 +15,8 @@ const Index = () => {
       {/* <div className="container py-8">
         <UserStats />
       </div> */}
-      <Leaderboard />
-      <ActivityFeed />
+      {/* <Leaderboard />
+      <ActivityFeed /> */}
       <IntegrationSection />
     </div>
   );
