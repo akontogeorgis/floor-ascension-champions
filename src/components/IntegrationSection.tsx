@@ -1,6 +1,7 @@
 import { Smartphone, Watch, Activity } from "lucide-react";
 import StravaConnect from "./StravaConnect";
 import GarminConnect from "./GarminConnect";
+import ManualEntryForm from "./ManualEntryForm";
 
 const IntegrationSection = () => {
   return (
@@ -59,6 +60,18 @@ const IntegrationSection = () => {
             Coming Soon
           </span>
         </div>
+      </div>
+
+      <div className="mt-8 text-center">
+        <div className="inline-flex items-center gap-2 text-sm text-muted-foreground mb-4">
+          <div className="h-px bg-border flex-1 w-20"></div>
+          <span>OR</span>
+          <div className="h-px bg-border flex-1 w-20"></div>
+        </div>
+        <ManualEntryForm />
+        <p className="text-xs text-muted-foreground mt-2">
+          No smart device? Log your time manually
+        </p>
       </div>
     </section>
   );

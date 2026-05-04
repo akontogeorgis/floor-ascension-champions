@@ -16,6 +16,7 @@ export default function StravaConnect() {
   const [syncing, setSyncing] = useState(false);
   const [showDeptSelector, setShowDeptSelector] = useState(false);
   const [department, setDepartment] = useState("Uncategorized");
+  const [lastSync, setLastSync] = useState<string | null>(null);
 
   useEffect(() => {
     const checkConnection = () => {
@@ -27,6 +28,7 @@ export default function StravaConnect() {
       if (token) {
         setConnected(true);
         setAthleteName(name || "");
+        setLastSync(localStorage.getItem("last_strava_sync"));
         
         // Fetch current department from database
         if (supabase && athleteId) {
@@ -47,20 +49,13 @@ export default function StravaConnect() {
         const lastSyncTime = lastSync ? parseInt(lastSync) : 0;
         const hoursSinceLastSync = (Date.now() - lastSyncTime) / (1000 * 60 * 60);
         
-        // Auto-sync if last sync was more than 1 hours ago (or never synced)
-        if (hoursSinceLastSync >= 1 || !lastSync) {
-          console.log(`Auto-syncing activities (last sync: ${hoursSinceLastSync.toFixed(1)} hours ago)`);
-          // Delay slightly to let the UI load first
-          setTimeout(() => {
-            syncActivities(true); // true = silent sync
-          }, 2000);
+        // Auto-sync if last sync was more than 6 hours ago (or never synced)
+        // Don't auto-sync - token likely expired, user should manually reconnect
+        if (hoursSinceLastSync >= 6 || !lastSync) {
+          console.log(`⚠️ Last sync was ${hoursSinceLastSync.toFixed(1)} hours ago - token may be expired. Please reconnect to Strava.`);
+          // Don't auto-sync - just show message in console
         } else {
-          console.log(`No auto-sync needed (last sync: ${hoursSinceLastSync.toFixed(1)} hours ago)`);
-          // Still disconnect even if no sync needed (to free athlete slot)
-          setTimeout(() => {
-            console.log("Auto-disconnecting (already synced recently)...");
-            disconnect(true); // true = silent
-          }, 3000); // 3 seconds
+          console.log(`✅ No auto-sync needed (last sync: ${hoursSinceLastSync.toFixed(1)} hours ago)`);
         }
       }
     };
@@ -224,7 +219,9 @@ export default function StravaConnect() {
       }
 
       // Save last sync timestamp
-      localStorage.setItem("last_strava_sync", Date.now().toString());
+      const syncTime = Date.now().toString();
+      localStorage.setItem("last_strava_sync", syncTime);
+      setLastSync(syncTime);
 
       if (imported > 0) {
         if (!silent) {
@@ -237,12 +234,12 @@ export default function StravaConnect() {
         // Trigger a refresh by dispatching a custom event
         window.dispatchEvent(new Event('activities-updated'));
         
-        // Auto-disconnect after successful sync to free up athlete slot for others
-        // Silent disconnect - no toast notification
-        setTimeout(() => {
-          console.log("Auto-disconnecting to free athlete slot for others...");
-          disconnect(true); // true = silent disconnect
-        }, 2000); // 2 second delay to ensure sync completes
+        // DISABLED: Auto-disconnect after successful sync
+        // Uncomment below to re-enable auto-disconnect feature
+        // setTimeout(() => {
+        //   console.log("Auto-disconnecting to free athlete slot for others...");
+        //   disconnect(true); // true = silent disconnect
+        // }, 2000);
       } else if (skipped > 0) {
         if (!silent) {
           toast.info(`All ${skipped} activities already imported!`);
@@ -250,11 +247,11 @@ export default function StravaConnect() {
           console.log(`Auto-sync: All ${skipped} activities already imported`);
         }
         
-        // Disconnect even if no new activities (already synced before)
-        setTimeout(() => {
-          console.log("Auto-disconnecting (no new activities)...");
-          disconnect(true);
-        }, 2000);
+        // DISABLED: Auto-disconnect when no new activities
+        // setTimeout(() => {
+        //   console.log("Auto-disconnecting (no new activities)...");
+        //   disconnect(true);
+        // }, 2000);
       } else {
         if (!silent) {
           toast.info("No stair climbing activities found (looking for ~25m elevation gain)");
@@ -262,11 +259,11 @@ export default function StravaConnect() {
           console.log("Auto-sync: No new activities found");
         }
         
-        // Disconnect even if no activities found
-        setTimeout(() => {
-          console.log("Auto-disconnecting (no activities found)...");
-          disconnect(true);
-        }, 2000);
+        // DISABLED: Auto-disconnect when no activities found
+        // setTimeout(() => {
+        //   console.log("Auto-disconnecting (no activities found)...");
+        //   disconnect(true);
+        // }, 2000);
       }
     } catch (error) {
       console.error("Sync error:", error);
@@ -302,20 +299,27 @@ export default function StravaConnect() {
               <Settings className="w-3 h-3" />
             </Button>
           </div>
-          <div className="flex gap-2">
-            <Button
-              variant="default"
-              size="sm"
-              onClick={() => syncActivities()}
-              disabled={syncing}
-              className="gap-2 flex-1"
-            >
-              <RefreshCw className={`w-3 h-3 ${syncing ? 'animate-spin' : ''}`} />
-              {syncing ? "Syncing..." : "Sync Now"}
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => disconnect()}>
-              Disconnect
-            </Button>
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => syncActivities()}
+                disabled={syncing}
+                className="gap-2 flex-1"
+              >
+                <RefreshCw className={`w-3 h-3 ${syncing ? 'animate-spin' : ''}`} />
+                {syncing ? "Syncing..." : "Sync Now"}
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => disconnect()}>
+                Disconnect
+              </Button>
+            </div>
+            {lastSync && (
+              <p className="text-xs text-muted-foreground text-center">
+                Last synced: {new Date(parseInt(lastSync)).toLocaleString()}
+              </p>
+            )}
           </div>
         </div>
 
