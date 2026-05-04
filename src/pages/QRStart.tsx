@@ -9,11 +9,21 @@ import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { PlayCircle, Loader2, UserPlus } from "lucide-react";
 
+const PRESET_DEPARTMENTS = [
+  "Senior Troublemakers",
+  "0100101101",
+  "Orchestrators",
+  "Digital Alchemists",
+  "Uncategorized",
+];
+
 export default function QRStart() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [department, setDepartment] = useState("");
+  const [customDepartment, setCustomDepartment] = useState("");
+  const [isCustomDept, setIsCustomDept] = useState(false);
   const [startFloor, setStartFloor] = useState("0");
   const [loading, setLoading] = useState(false);
   const [isNewUser, setIsNewUser] = useState(false);
@@ -59,7 +69,9 @@ export default function QRStart() {
       return;
     }
 
-    if (isNewUser && (!name.trim() || !department.trim())) {
+    const finalDepartment = isCustomDept ? customDepartment.trim() : department;
+
+    if (isNewUser && (!name.trim() || !finalDepartment)) {
       toast.error("Please enter your name and department");
       return;
     }
@@ -80,18 +92,29 @@ export default function QRStart() {
         profile = existingProfile;
       } else {
         // Create new user profile
+        console.log('Creating new profile:', {
+          email: email.trim().toLowerCase(),
+          name: name.trim(),
+          department: finalDepartment
+        });
+
         const { data: newProfile, error: createError } = await supabase
           .from('profiles')
           .insert({
             email: email.trim().toLowerCase(),
             name: name.trim(),
-            department: department.trim(),
-            created_at: new Date().toISOString()
+            department: finalDepartment,
+            // Don't set created_at manually - let DB handle it with DEFAULT
           })
           .select('id, name')
           .single();
 
-        if (createError) throw createError;
+        if (createError) {
+          console.error('Error creating profile:', createError);
+          toast.error(`Failed to create profile: ${createError.message}`);
+          return;
+        }
+
         profile = newProfile;
 
         toast.success(`Welcome ${name}!`, {
@@ -128,7 +151,11 @@ export default function QRStart() {
           completed: false
         });
 
-      if (sessionError) throw sessionError;
+      if (sessionError) {
+        console.error('Error creating session:', sessionError);
+        toast.error(`Failed to create session: ${sessionError.message}`);
+        return;
+      }
 
       // Store session in localStorage for quick access
       localStorage.setItem('qr_session', JSON.stringify({
