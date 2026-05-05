@@ -86,7 +86,7 @@ export default function QRStart() {
       // Check if user exists
       const { data: existingProfile } = await supabase
         .from('profiles')
-        .select('id, name')
+        .select('id, full_name')
         .eq('email', email.trim().toLowerCase())
         .single();
 
@@ -96,7 +96,7 @@ export default function QRStart() {
         // Create new user profile
         console.log('Creating new profile:', {
           email: email.trim().toLowerCase(),
-          name: name.trim(),
+          full_name: name.trim(),
           department: finalDepartment
         });
 
@@ -104,16 +104,18 @@ export default function QRStart() {
           .from('profiles')
           .insert({
             email: email.trim().toLowerCase(),
-            name: name.trim(),
-            department: finalDepartment,
-            // Don't set created_at manually - let DB handle it with DEFAULT
+            full_name: name.trim(),
+            department: finalDepartment
           })
-          .select('id, name')
+          .select('id, full_name')
           .single();
 
         if (createError) {
           console.error('Error creating profile:', createError);
-          toast.error(`Failed to create profile: ${createError.message}`);
+          toast.error("Failed to create profile", {
+            description: createError.message
+          });
+          setLoading(false);
           return;
         }
 
@@ -163,12 +165,12 @@ export default function QRStart() {
       localStorage.setItem('qr_session', JSON.stringify({
         session_token: sessionToken,
         user_id: profile.id,
-        user_name: profile.name,
+        user_name: profile.full_name,
         start_floor: parseInt(startFloor),
         start_time: startTime
       }));
 
-      toast.success(`Session started for ${profile.name}!`, {
+      toast.success(`Session started for ${profile.full_name}!`, {
         description: `Starting from floor ${startFloor}. Now climb and scan the FINISH QR code!`,
         duration: 5000
       });
