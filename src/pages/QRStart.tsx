@@ -45,18 +45,20 @@ export default function QRStart() {
     try {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('id, name, department')
+        .select('id, full_name, department')
         .eq('email', email.trim().toLowerCase())
         .single();
 
       if (profile) {
-        setName(profile.name || "");
+        setName(profile.full_name || "");
         setDepartment(profile.department || "");
         setIsNewUser(false);
+        toast.info(`Welcome back, ${profile.full_name}!`);
       } else {
         setIsNewUser(true);
         setName("");
         setDepartment("");
+        setCustomDepartment("");
       }
     } catch (error) {
       setIsNewUser(true);
