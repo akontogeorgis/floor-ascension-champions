@@ -93,10 +93,16 @@ export default function QRStart() {
       if (existingProfile) {
         profile = existingProfile;
       } else {
-        // Create new user profile
+        // Create new user profile with initials (like StravaCallback does)
+        const nameParts = name.trim().split(' ');
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts[nameParts.length - 1] || '';
+        const initials = `${firstName[0] || ''}${lastName[0] || ''}`.toUpperCase();
+        
         console.log('Creating new profile:', {
           email: email.trim().toLowerCase(),
           full_name: name.trim(),
+          avatar_initials: initials,
           department: finalDepartment
         });
 
@@ -105,6 +111,7 @@ export default function QRStart() {
           .insert({
             email: email.trim().toLowerCase(),
             full_name: name.trim(),
+            avatar_initials: initials,
             department: finalDepartment
           })
           .select('id, full_name')
